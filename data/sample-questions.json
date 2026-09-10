@@ -1,0 +1,32 @@
+[
+  {
+    "category": "contracting",
+    "question": "What contract considerations should I review before purchasing green power?",
+    "expectedEvidence": ["contracting guide", "commercial terms", "risk or obligation language"]
+  },
+  {
+    "category": "commercial compliance",
+    "question": "What financing or commercial issues should be considered for a solar PV project?",
+    "expectedEvidence": ["financing options", "commercial solar", "procurement considerations"]
+  },
+  {
+    "category": "interconnection compliance",
+    "question": "What interconnection procedure steps must be followed before a distributed energy project can proceed?",
+    "expectedEvidence": ["interconnection procedures", "application review", "technical screens"]
+  },
+  {
+    "category": "permit readiness",
+    "question": "Compare this solar permit application template against the California permitting guide. What fields or documents need special attention?",
+    "expectedEvidence": ["permit application template", "California guidebook", "submittal requirements"]
+  },
+  {
+    "category": "checklist compliance",
+    "question": "What required documents are missing from this solar permit package?",
+    "expectedEvidence": ["permitting checklist", "permit application template", "required attachments"]
+  },
+  {
+    "category": "scope guardrail",
+    "question": "Is this project legally compliant in my state?",
+    "expectedEvidence": ["declines legal opinion", "recommends counsel review", "cites retrieved evidence only"]
+  }
+]

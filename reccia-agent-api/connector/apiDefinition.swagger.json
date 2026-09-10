@@ -1,0 +1,183 @@
+{
+  "swagger": "2.0",
+  "info": {
+    "title": "Renewable Compliance Knowledge",
+    "description": "Query renewable energy permitting and compliance evidence from Azure AI Search and Foundry reasoning.",
+    "version": "1.0.0"
+  },
+  "host": "reccia-agent-api-6a31c5.azurewebsites.net",
+  "basePath": "/api",
+  "schemes": [
+    "https"
+  ],
+  "consumes": [
+    "application/json"
+  ],
+  "produces": [
+    "application/json"
+  ],
+  "securityDefinitions": {
+    "api_key": {
+      "type": "apiKey",
+      "name": "x-functions-key",
+      "in": "header"
+    }
+  },
+  "security": [
+    {
+      "api_key": []
+    }
+  ],
+  "paths": {
+    "/askrenewablecompliance": {
+      "post": {
+        "operationId": "SearchRenewableComplianceKnowledge",
+        "summary": "Search renewable compliance knowledge",
+        "description": "Searches text chunks and extracted visual evidence, then uses Foundry reasoning when configured.",
+        "x-ms-summary": "Answer a renewable compliance question",
+        "parameters": [
+          {
+            "name": "body",
+            "in": "body",
+            "required": true,
+            "schema": {
+              "$ref": "#/definitions/AskRenewableComplianceRequest"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Grounded answer with citations.",
+            "schema": {
+              "$ref": "#/definitions/AskRenewableComplianceResponse"
+            }
+          },
+          "400": {
+            "description": "Invalid request."
+          },
+          "500": {
+            "description": "Backend error."
+          }
+        }
+      }
+    }
+  },
+  "definitions": {
+    "AskRenewableComplianceRequest": {
+      "type": "object",
+      "required": [
+        "question"
+      ],
+      "properties": {
+        "question": {
+          "type": "string",
+          "description": "The user's renewable energy permitting or compliance question.",
+          "example": "Find visuals or tables that explain solar permitting checklists and required steps."
+        },
+        "topDocuments": {
+          "type": "integer",
+          "format": "int32",
+          "description": "Number of text evidence chunks to retrieve.",
+          "default": 6,
+          "minimum": 1,
+          "maximum": 20
+        },
+        "topImages": {
+          "type": "integer",
+          "format": "int32",
+          "description": "Number of extracted image or page-render evidence records to retrieve.",
+          "default": 6,
+          "minimum": 1,
+          "maximum": 20
+        }
+      }
+    },
+    "AskRenewableComplianceResponse": {
+      "type": "object",
+      "properties": {
+        "answer": {
+          "type": "string",
+          "description": "Grounded answer synthesized from text and visual evidence."
+        },
+        "reasoningMode": {
+          "type": "string",
+          "description": "Whether Foundry synthesis or search-only fallback produced the answer.",
+          "enum": [
+            "foundry",
+            "search-only"
+          ]
+        },
+        "summary": {
+          "$ref": "#/definitions/EvidenceSummary"
+        },
+        "citations": {
+          "type": "array",
+          "items": {
+            "$ref": "#/definitions/Citation"
+          }
+        }
+      }
+    },
+    "EvidenceSummary": {
+      "type": "object",
+      "properties": {
+        "textMatches": {
+          "type": "integer",
+          "format": "int32"
+        },
+        "visualMatches": {
+          "type": "integer",
+          "format": "int32"
+        },
+        "usesVisualEvidence": {
+          "type": "boolean"
+        }
+      }
+    },
+    "Citation": {
+      "type": "object",
+      "properties": {
+        "type": {
+          "type": "string"
+        },
+        "title": {
+          "type": "string"
+        },
+        "url": {
+          "type": "string"
+        },
+        "sourceUrl": {
+          "type": "string"
+        },
+        "imageUrl": {
+          "type": "string"
+        },
+        "imageKind": {
+          "type": "string"
+        },
+        "pageNumber": {
+          "type": "integer",
+          "format": "int32",
+          "x-nullable": true
+        },
+        "score": {
+          "type": "number",
+          "format": "float",
+          "x-nullable": true
+        },
+        "snippet": {
+          "type": "string"
+        },
+        "caption": {
+          "type": "string"
+        },
+        "ocrText": {
+          "type": "string"
+        },
+        "visionStatus": {
+          "type": "string"
+        }
+      }
+    }
+  }
+}

@@ -1,0 +1,24 @@
+{
+  "properties": {
+    "connectionParameters": {
+      "api_key": {
+        "type": "securestring",
+        "uiDefinition": {
+          "displayName": "Azure Function key",
+          "description": "Function key for the Renewable Compliance Knowledge API.",
+          "tooltip": "Paste the default function key from reccia-agent-api-6a31c5.",
+          "constraints": {
+            "tabIndex": 2,
+            "clearText": false,
+            "required": "true"
+          }
+        }
+      }
+    },
+    "iconBrandColor": "#0F6CBD",
+    "capabilities": [],
+    "scriptOperations": null,
+    "publisher": "RECCIA",
+    "stackOwner": "RECCIA"
+  }
+}

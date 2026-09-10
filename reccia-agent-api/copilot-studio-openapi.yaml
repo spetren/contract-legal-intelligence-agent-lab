@@ -1,0 +1,78 @@
+openapi: 3.0.1
+info:
+  title: Renewable Compliance Knowledge
+  description: Query renewable energy permitting and compliance evidence from Azure AI Search and Foundry reasoning.
+  version: 1.0.0
+servers:
+  - url: https://reccia-agent-api-6a31c5.azurewebsites.net/api
+paths:
+  /askrenewablecompliance:
+    post:
+      operationId: SearchRenewableComplianceKnowledge
+      summary: Answer a renewable energy permitting or compliance question
+      description: Searches text and extracted visual evidence, then uses Foundry reasoning when configured.
+      security:
+        - functionKey: []
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              required:
+                - question
+              properties:
+                question:
+                  type: string
+                  description: The user's renewable energy permitting or compliance question.
+                topDocuments:
+                  type: integer
+                  description: Number of text evidence chunks to retrieve.
+                  default: 6
+                  minimum: 1
+                  maximum: 20
+                topImages:
+                  type: integer
+                  description: Number of extracted image or page-render evidence records to retrieve.
+                  default: 6
+                  minimum: 1
+                  maximum: 20
+      responses:
+        "200":
+          description: Grounded answer with citations.
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  answer:
+                    type: string
+                  reasoningMode:
+                    type: string
+                    enum:
+                      - foundry
+                      - search-only
+                  summary:
+                    type: object
+                    properties:
+                      textMatches:
+                        type: integer
+                      visualMatches:
+                        type: integer
+                      usesVisualEvidence:
+                        type: boolean
+                  citations:
+                    type: array
+                    items:
+                      type: object
+                      additionalProperties: true
+        "400":
+          description: Invalid request.
+        "500":
+          description: Backend error.
+components:
+  securitySchemes:
+    functionKey:
+      type: apiKey
+      in: header
+      name: x-functions-key

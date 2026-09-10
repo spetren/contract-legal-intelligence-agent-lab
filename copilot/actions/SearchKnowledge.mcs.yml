@@ -1,0 +1,23 @@
+mcs.metadata:
+  componentName: SearchKnowledge
+kind: TaskDialog
+modelDisplayName: Search renewable compliance knowledge
+modelDescription: Searches renewable energy permitting, zoning, interconnection, contracting, compliance, diagrams, tables, forms, and checklist evidence from Azure AI Search, then uses Foundry reasoning to answer with citations.
+outputs:
+  - propertyName: answer
+
+  - propertyName: reasoningMode
+
+  - propertyName: summary
+
+  - propertyName: citations
+
+action:
+  kind: InvokeConnectorTaskAction
+  connectionReference: {{BOT_SCHEMA_NAME}}.{{CONNECTOR_INTERNAL_ID}}.{{CONNECTION_NAME}}
+  connectionProperties:
+    mode: Invoker
+
+  operationId: SearchRenewableComplianceKnowledge
+
+outputMode: All

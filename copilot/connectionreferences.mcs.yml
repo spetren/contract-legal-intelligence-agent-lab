@@ -1,0 +1,4 @@
+connectionReferences:
+  - connectionReferenceLogicalName: {{BOT_SCHEMA_NAME}}.{{CONNECTOR_INTERNAL_ID}}.{{CONNECTION_NAME}}
+    connectorId: /providers/Microsoft.PowerApps/apis/{{CONNECTOR_INTERNAL_ID}}
+

@@ -1,0 +1,46 @@
+# Python
+.venv/
+__pycache__/
+*.py[cod]
+
+# Node/session tooling
+node_modules/
+package-lock.json
+
+# Local settings and secrets
+.env
+*.local.json
+local.settings.json
+*.publishsettings
+
+# Build and generated artifacts
+out/
+dist/
+build/
+*.zip
+
+# Local corpus cache generated from data/document-index.csv
+data/source-documents/*
+!data/source-documents/.gitkeep
+data/source-documents-*/*
+data/extracted-images/*
+!data/extracted-images/.gitkeep
+data/extracted-images-*/*
+data/download-summary.json
+data/bootstrap-summary.json
+
+# Bicep build output
+infra/main.json
+
+# Local Copilot Studio sync metadata and environment-specific workspaces
+reccia-copilot-agent/
+reccia-copilot-synced/
+reccia-agent-api/connector-downloaded/
+
+# Alternate prototype host not used by the lab
+reccia-agent-web/
+
+# Logs and temp output
+*.log
+*.tmp
+*.bak
