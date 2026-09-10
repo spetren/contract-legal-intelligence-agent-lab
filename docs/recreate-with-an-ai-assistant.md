@@ -14,10 +14,10 @@ abstract guidance - copy, adapt, and go.
 
 1. A working Copilot Studio agent grounded on your own document corpus, with text and visual-evidence
    retrieval.
-2. A demo-sized corpus scoped to your time box (this build used six documents for 90 minutes).
+2. A lab-sized corpus scoped to your time box (this build used six documents for 90 minutes).
 3. A companion Lab Guide (`.docx`) that matches the deployed solution and corpus exactly.
-4. A one-slide What/Why/How/Next-Steps deck for framing the demo with a customer.
-5. A standalone GitHub repo scoped to just that demo - the thing you can actually hand to someone else.
+4. A one-slide What/Why/How/Next-Steps deck for framing the lab with a customer.
+5. A standalone GitHub repo scoped to just that lab - the thing you can actually hand to someone else.
 
 ## Prerequisites
 
@@ -49,15 +49,15 @@ This is exactly `scripts/deploy-azure-resources.ps1` -> `bootstrap-sharepoint-co
 skip a step's exit criteria to save time - an unbound connector or an empty index surfaces later as a
 confusing agent failure, not an obvious infrastructure error.
 
-## Step 3 - Choose your demo-sized corpus
+## Step 3 - Choose your lab-sized corpus
 
-> "We need to fit this into a 90-minute demo. Pick 5-6 documents from the full corpus that best cover
+> "We need to fit this into a 90-minute lab. Pick 5-6 documents from the full corpus that best cover
 > [your scenario's core questions - e.g. contracting, financing, interconnection, permit readiness], and
 > produce a trimmed `document-index.csv` and a matching `sample-questions.json` for just those documents."
 
 Keep the full corpus file and the trimmed one side by side at first (as an alternate path) until you are
 sure of the cut - this repo went through exactly that intermediate state before being promoted to a
-standalone demo repo in Step 6.
+standalone lab repo in Step 6.
 
 ## Step 4 - Generate the companion one-slide deck
 
@@ -75,7 +75,7 @@ closing stray PowerPoint processes before re-exporting resolves it).
 
 > "Take the existing Lab Guide and update it to match this slide and the trimmed corpus: rename the title,
 > update every document-count and time estimate to the new corpus size, replace sample prompts that
-> reference documents we cut, and add (a) a short 'What this demo is for' section framing it as a template
+> reference documents we cut, and add (a) a short 'What this lab is for' section framing it as a template
 > an AI assistant can help deploy in a fixed time box, and (b) a single-tenant BYOT/CDX prerequisite
 > warning in the prerequisites checklist. Show me each addition before you add it, then fix the page map."
 
@@ -89,9 +89,9 @@ Two things worth knowing before you ask for this:
   means opening the file with Word automation and updating the fields/TOC and repaginating - not editing
   page numbers by hand.
 
-## Step 6 - Fork it into a standalone demo repo
+## Step 6 - Fork it into a standalone lab repo
 
-> "Create a new public GitHub repo for just this 90-minute demo. Copy the working solution's code into it,
+> "Create a new public GitHub repo for just this 90-minute lab. Copy the working solution's code into it,
 > but trim `data/` down to only the documents we chose in Step 3, swap in the new Lab Guide and slide deck
 > under `docs/` and `assets/`, and rewrite the README so there's a single path through the repo - no
 > leftover references to the full corpus or the old branding. Push it and show me the final file list."

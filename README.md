@@ -2,7 +2,7 @@
 
 **RECCIA** stands for **Renewable Energy Contract and Compliance Intelligence Agent** - the internal
 technical short name used throughout this repo's resources and scripts. This repo is a **90-minute,
-six-document demo build** of the Contract & Legal Intelligence Agent pattern from the
+six-document lab build** of the Contract & Legal Intelligence Agent pattern from the
 [AI Agent Runbooks](https://github.com/microsoft/ai-agent-runbooks) library, worked through a
 renewable-energy permitting and compliance example.
 
@@ -14,7 +14,7 @@ Studio custom connector action.
 ## What this repo is for
 
 This is deliberately a **template, not a finished product** - a working proof of concept sized to build and
-demo end-to-end in a single 90-minute sitting with the help of an AI coding assistant like Microsoft Scout
+run end-to-end in a single 90-minute sitting with the help of an AI coding assistant like Microsoft Scout
 or GitHub Copilot. Fork it, then extend it with:
 
 - **Private endpoints and network isolation**, if the target environment requires them.
@@ -31,7 +31,7 @@ production.
 **Want to build this same pattern for your own scenario?** See
 [docs/recreate-with-an-ai-assistant.md](docs/recreate-with-an-ai-assistant.md) for the exact,
 step-by-step prompts used to have an AI assistant deploy the solution, trim the corpus, generate the Lab
-Guide and slide deck, and fork it into a standalone demo repo like this one.
+Guide and slide deck, and fork it into a standalone lab repo like this one.
 
 ## What the lab builds
 
@@ -56,7 +56,7 @@ those public documents and uploads them into your SharePoint document library be
 **Full lab guide:** [Contract & Legal Intelligence Agent Lab Guide](docs/Contract-and-Legal-Intelligence-Agent-Lab-Guide.docx)
 provides the end-to-end implementation walkthrough, validation checklist, troubleshooting matrix, and
 sign-off template. **One-slide summary:** [assets/](assets/) has a What/Why/How/Next-Steps deck for
-framing the demo with a customer.
+framing the lab with a customer.
 
 ## Repo layout
 
@@ -72,9 +72,9 @@ framing the demo with a customer.
 | `copilot/` | Reusable Copilot Studio action and connection-reference templates. |
 | `prompts/` | Reusable Copilot Studio and Foundry reasoning prompts. |
 | `docs/` | Architecture, processing pipeline, Copilot setup, and troubleshooting notes. |
-| `docs/Contract-and-Legal-Intelligence-Agent-Lab-Guide.docx` | Complete instructor-style implementation lab guide, sized for a 90-minute demo. |
+| `docs/Contract-and-Legal-Intelligence-Agent-Lab-Guide.docx` | Complete instructor-style implementation lab guide, sized for a 90-minute lab. |
 | `docs/recreate-with-an-ai-assistant.md` | Step-by-step prompts for having an AI assistant reproduce this whole pattern for a different scenario or corpus. |
-| `assets/` | One-slide What/Why/How/Next-Steps deck and preview image for framing the demo. |
+| `assets/` | One-slide What/Why/How/Next-Steps deck and preview image for framing the lab. |
 
 ## Prerequisites
 
@@ -179,7 +179,7 @@ Then register the Copilot Studio custom connector:
 | 35-50 min | Six-document SharePoint bootstrap | The corpus is uploaded into its own SharePoint folder. |
 | 50-65 min | Text ingestion and targeted visual extraction | `reccia-documents` and `reccia-images` are populated from the six-document corpus. |
 | 65-80 min | Function, connector, and Copilot Studio action | The API and action path are tested. |
-| 80-90 min | Compliance guardrails and demo prompts | Attendees validate citations, legal-advice refusal, and checklist comparison. |
+| 80-90 min | Compliance guardrails and lab prompts | Attendees validate citations, legal-advice refusal, and checklist comparison. |
 
 For a reliable 90-minute delivery, pre-stage Azure infrastructure before the session and use the live time
 for corpus bootstrap, ingestion, API testing, and Copilot Studio validation.
@@ -192,8 +192,8 @@ workshop flow.
 1. **Clone and prepare the repo.**
 
    ```powershell
-   git clone https://github.com/spetren/contract-legal-intelligence-agent-demo.git
-   cd contract-legal-intelligence-agent-demo
+   git clone https://github.com/spetren/contract-legal-intelligence-agent-lab.git
+   cd contract-legal-intelligence-agent-lab
    python -m venv .venv
    .\.venv\Scripts\python.exe -m pip install -r requirements.txt
    Copy-Item .env.example .env
@@ -310,11 +310,11 @@ workshop flow.
 
 9. **Validate the deployment.**
 
-   In the Copilot Studio test pane, run the prompts in the **Demo prompts** section below. Text answers
+   In the Copilot Studio test pane, run the prompts in the **Lab prompts** section below. Text answers
    should cite source documents and pages. Visual answers should return normal `[View diagram](url)`
    links, not inline image Markdown.
 
-## Demo prompts
+## Lab prompts
 
 Use `data\sample-questions.json` as the evaluation set. The core prompts are:
 

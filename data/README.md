@@ -3,7 +3,7 @@
 This folder makes the lab data layout explicit for replication.
 
 This repo is scoped to a curated **six-document** corpus sized for a 90-minute guided build or executive
-technical demo. `document-index.csv` records where each public source document came from so the lab can
+technical walkthrough. `document-index.csv` records where each public source document came from so the lab can
 download and upload the corpus into a new SharePoint library as part of the exercise.
 
 ## Folder layout
