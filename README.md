@@ -28,6 +28,11 @@ The goal is not a perfect agent - it is a working proof of concept, concrete eno
 with a customer in the room, and structured enough that a delivery team can pick it up and take it to
 production.
 
+**Want to build this same pattern for your own scenario?** See
+[docs/recreate-with-an-ai-assistant.md](docs/recreate-with-an-ai-assistant.md) for the exact,
+step-by-step prompts used to have an AI assistant deploy the solution, trim the corpus, generate the Lab
+Guide and slide deck, and fork it into a standalone demo repo like this one.
+
 ## What the lab builds
 
 ```mermaid
@@ -68,6 +73,7 @@ framing the demo with a customer.
 | `prompts/` | Reusable Copilot Studio and Foundry reasoning prompts. |
 | `docs/` | Architecture, processing pipeline, Copilot setup, and troubleshooting notes. |
 | `docs/Contract-and-Legal-Intelligence-Agent-Lab-Guide.docx` | Complete instructor-style implementation lab guide, sized for a 90-minute demo. |
+| `docs/recreate-with-an-ai-assistant.md` | Step-by-step prompts for having an AI assistant reproduce this whole pattern for a different scenario or corpus. |
 | `assets/` | One-slide What/Why/How/Next-Steps deck and preview image for framing the demo. |
 
 ## Prerequisites
