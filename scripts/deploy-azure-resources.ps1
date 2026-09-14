@@ -1,7 +1,7 @@
 param(
   [Parameter(Mandatory = $true)][string]$SubscriptionId,
   [Parameter(Mandatory = $true)][string]$ResourceGroupName,
-  [string]$Location = "eastus",
+  [string]$Location = "",
   [string]$NamePrefix = "reccia",
   [string]$SearchServiceName = "",
   [string]$DocumentIntelligenceAccountName = "",
@@ -14,8 +14,30 @@ param(
 
 $ErrorActionPreference = "Stop"
 $repo = Split-Path -Parent $PSScriptRoot
+$regionFinder = Join-Path $PSScriptRoot "find-deployment-regions.ps1"
+
 az account set --subscription $SubscriptionId
+if ($LASTEXITCODE -ne 0) {
+  throw "Subscription '$SubscriptionId' is not available in the current Azure CLI login."
+}
+
+$regionParameters = @{
+  SubscriptionId = $SubscriptionId
+  ModelName = $OpenAIModelName
+  ModelVersion = $OpenAIModelVersion
+}
+if ($Location) {
+  $regionParameters.Regions = @($Location)
+}
+
+$eligibleRegion = & $regionFinder @regionParameters
+$Location = $eligibleRegion.Region
+Write-Host "Using Azure region '$Location' for Flex Consumption and $OpenAIModelName $OpenAIModelVersion."
+
 az group create --name $ResourceGroupName --location $Location | Out-Null
+if ($LASTEXITCODE -ne 0) {
+  throw "Creating resource group '$ResourceGroupName' in '$Location' failed."
+}
 
 $bicepPath = Join-Path $repo "infra\main.bicep"
 if (Test-Path $bicepPath) {

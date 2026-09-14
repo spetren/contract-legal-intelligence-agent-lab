@@ -11,7 +11,8 @@ The script extracts:
   - PDF page renders, to capture scanned pages and vector diagrams that are not embedded images
   - DOCX/PPTX package media files
 
-Credentials are resolved at runtime through the active Azure CLI session.
+Microsoft Graph uses interactive MSAL authentication. Azure resource credentials
+are resolved through the active Azure CLI session.
 """
 
 from __future__ import annotations
@@ -42,6 +43,7 @@ from PIL import Image
 from ingest_sharepoint_to_search import (
     SourceFile,
     get_cli_token,
+    get_interactive_graph_token,
     request,
     run_az,
     search_headers,
@@ -200,6 +202,25 @@ def upload_graph_content(
 
 
 def get_cognitive_credential(resource_group: str, account_name: str) -> str:
+    local_auth_disabled = run_az(
+        [
+            "cognitiveservices",
+            "account",
+            "show",
+            "--resource-group",
+            resource_group,
+            "--name",
+            account_name,
+            "--query",
+            "properties.disableLocalAuth",
+            "-o",
+            "tsv",
+        ]
+    ).lower() == "true"
+    if local_auth_disabled:
+        print("Azure AI Vision local key auth is disabled; using Microsoft Entra auth.")
+        return "aad:" + get_cli_token("https://cognitiveservices.azure.com")
+
     try:
         key = run_az(
             [
@@ -561,11 +582,21 @@ def iter_source_images(
 
 
 def download_graph_file(drive_id: str, item_id: str, graph_token: str) -> bytes:
-    url = f"https://graph.microsoft.com/v1.0/drives/{drive_id}/items/{item_id}/content"
+    metadata_url = (
+        f"https://graph.microsoft.com/v1.0/drives/{drive_id}/items/{item_id}"
+        "?%24select=%40microsoft.graph.downloadUrl"
+    )
+    metadata = request(
+        "GET",
+        metadata_url,
+        headers={"Authorization": f"Bearer {graph_token}"},
+    )
+    download_url = metadata.get("@microsoft.graph.downloadUrl")
+    if not download_url:
+        raise RuntimeError(f"Microsoft Graph did not return a download URL for item '{item_id}'.")
     body, _headers = request(
         "GET",
-        url,
-        headers={"Authorization": f"Bearer {graph_token}"},
+        download_url,
         expect_json=False,
         timeout=600,
     )
@@ -575,6 +606,8 @@ def download_graph_file(drive_id: str, item_id: str, graph_token: str) -> bytes:
 def main() -> int:
     parser = argparse.ArgumentParser()
     parser.add_argument("--subscription", required=True)
+    parser.add_argument("--tenant-id", required=True)
+    parser.add_argument("--graph-client-id", required=True)
     parser.add_argument("--resource-group", required=True)
     parser.add_argument("--search-service", required=True)
     parser.add_argument("--vision-account", required=True)
@@ -594,7 +627,11 @@ def main() -> int:
     args = parser.parse_args()
 
     run_az(["account", "set", "--subscription", args.subscription])
-    graph_token = get_cli_token("https://graph.microsoft.com")
+    graph_token = get_interactive_graph_token(
+        args.tenant_id,
+        args.graph_client_id,
+        scopes=["Files.ReadWrite.All"],
+    )
     search_key = run_az(
         [
             "search",

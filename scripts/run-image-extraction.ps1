@@ -1,5 +1,7 @@
 param(
   [Parameter(Mandatory = $true)][string]$SubscriptionId,
+  [Parameter(Mandatory = $true)][string]$TenantId,
+  [Parameter(Mandatory = $true)][string]$GraphClientId,
   [Parameter(Mandatory = $true)][string]$ResourceGroupName,
   [Parameter(Mandatory = $true)][string]$SearchServiceName,
   [Parameter(Mandatory = $true)][string]$VisionAccountName,
@@ -24,6 +26,8 @@ az account set --subscription $SubscriptionId
 $args = @(
   (Join-Path $repo "extract_images_to_search.py"),
   "--subscription", $SubscriptionId,
+  "--tenant-id", $TenantId,
+  "--graph-client-id", $GraphClientId,
   "--resource-group", $ResourceGroupName,
   "--search-service", $SearchServiceName,
   "--vision-account", $VisionAccountName,
@@ -40,4 +44,7 @@ if ($RenderPages) { $args += "--render-pages" }
 if ($SkipExistingIndexed) { $args += "--skip-existing-indexed" }
 
 & $python @args
+if ($LASTEXITCODE -ne 0) {
+  throw "Image extraction failed with exit code $LASTEXITCODE."
+}
 

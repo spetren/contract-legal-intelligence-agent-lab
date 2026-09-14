@@ -13,10 +13,35 @@
 | Linux Azure Function App | Hosts the `askRenewableCompliance` API used by the Copilot Studio custom connector. |
 | Managed identity role assignment for the Function App to call Azure OpenAI | Grants the Function's managed identity permission to call Azure OpenAI without storing model account keys. |
 
+## Find an eligible deployment region
+
+The Function App uses the Flex Consumption (`FC1`) plan. Before creating the resource group, use the region finder to select the first region that supports Flex Consumption and the configured Azure OpenAI model version:
+
+```powershell
+.\scripts\find-deployment-regions.ps1 `
+  -SubscriptionId "<subscription-id>"
+```
+
+The script tries common US regions first and stops at the first match. To control the search order, add `-Regions northcentralus,eastus`. The model check confirms catalog availability, not separate Azure OpenAI quota or deployment capacity.
+
+The template does not create the legacy Dynamic Consumption (`Y1`) plan, and Y1 quota is not required by this deployment.
+
+Before running the deployment, register the Log Analytics provider required by Application Insights:
+
+```powershell
+az provider register --namespace Microsoft.OperationalInsights
+az provider show `
+  --namespace Microsoft.OperationalInsights `
+  --query registrationState `
+  --output tsv
+```
+
+Continue only after the provider status is `Registered`.
+
 Deploy it with:
 
 ```powershell
-az group create --name rg-reccia-graph-ingestion --location eastus
+az group create --name rg-reccia-graph-ingestion --location "<eligible-region>"
 
 az deployment group create `
   --resource-group rg-reccia-graph-ingestion `

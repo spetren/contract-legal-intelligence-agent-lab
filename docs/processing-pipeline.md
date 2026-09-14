@@ -4,6 +4,8 @@
 
 `ingest_sharepoint_to_search.py` reads source documents from a SharePoint folder through Microsoft Graph, extracts text, chunks it, and uploads records to Azure AI Search.
 
+It uses delegated device-code authentication with `Files.Read.All`. Create the public client first with `scripts\register-graph-client.ps1`; see [Microsoft Graph app registration](graph-app-registration.md).
+
 Supported source types:
 
 - PDF
@@ -15,6 +17,8 @@ PDFs and images use Azure AI Document Intelligence layout extraction. DOCX files
 ## Visual ingestion
 
 `extract_images_to_search.py` creates one Search record per extracted visual asset.
+
+It requests delegated `Files.ReadWrite.All` because extracted assets are written back to SharePoint.
 
 It handles:
 

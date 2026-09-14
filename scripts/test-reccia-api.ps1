@@ -14,11 +14,17 @@ $key = az functionapp keys list `
   --query functionKeys.default `
   -o tsv
 
-$hostName = az functionapp show `
+$hostName = az resource show `
   --resource-group $ResourceGroupName `
   --name $FunctionAppName `
-  --query defaultHostName `
+  --resource-type Microsoft.Web/sites `
+  --api-version 2024-04-01 `
+  --query properties.defaultHostName `
   -o tsv
+
+if (-not $hostName) {
+  throw "Function hostname was empty."
+}
 
 $body = @{
   question = $Question

@@ -35,6 +35,7 @@ infra/main.json
 # Local Copilot Studio sync metadata and environment-specific workspaces
 reccia-copilot-agent/
 reccia-copilot-synced/
+reccia-agent-workspace/
 reccia-agent-api/connector-downloaded/
 
 # Alternate prototype host not used by the lab

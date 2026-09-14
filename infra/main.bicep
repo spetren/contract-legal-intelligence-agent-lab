@@ -58,13 +58,12 @@ param imageIndexName string = 'reccia-images'
 
 var suffix = toLower(take(uniqueString(resourceGroup().id), 6))
 var searchName = empty(searchServiceName) ? '${namePrefix}-search-${suffix}' : searchServiceName
-var docIntelName = empty(documentIntelligenceAccountName) ? '${namePrefix}-docintel-${suffix}' : documentIntelligenceAccountName
+var docIntelName = empty(documentIntelligenceAccountName) ? '${namePrefix}-docintelrg-reccia-lab-${suffix}' : documentIntelligenceAccountName
 var visionName = empty(visionAccountName) ? '${namePrefix}-vision-${suffix}' : visionAccountName
 var openAIName = empty(openAIAccountName) ? '${namePrefix}-openai-${suffix}' : openAIAccountName
 var functionName = empty(functionAppName) ? '${namePrefix}-agent-api-${suffix}' : functionAppName
 var storageName = empty(storageAccountName) ? take(replace('${namePrefix}fn${suffix}', '-', ''), 24) : storageAccountName
 var appInsightsName = '${functionName}-appi'
-var hostingPlanName = '${functionName}-plan'
 
 resource searchService 'Microsoft.Search/searchServices@2023-11-01' = {
   name: searchName
@@ -157,98 +156,25 @@ resource storage 'Microsoft.Storage/storageAccounts@2023-05-01' = {
   properties: {
     minimumTlsVersion: 'TLS1_2'
     allowBlobPublicAccess: false
-    allowSharedKeyAccess: true
+    allowSharedKeyAccess: false
     supportsHttpsTrafficOnly: true
-    publicNetworkAccess: 'Enabled'
+    publicNetworkAccess: 'Disabled'
   }
 }
 
-resource appInsights 'Microsoft.Insights/components@2020-02-02' = {
-  name: appInsightsName
-  location: location
-  kind: 'web'
-  properties: {
-    Application_Type: 'web'
-  }
-}
-
-resource plan 'Microsoft.Web/serverfarms@2023-12-01' = {
-  name: hostingPlanName
-  location: location
-  sku: {
-    name: 'Y1'
-    tier: 'Dynamic'
-  }
-  properties: {
-    reserved: true
-  }
-}
-
-resource functionApp 'Microsoft.Web/sites@2023-12-01' = {
-  name: functionName
-  location: location
-  kind: 'functionapp,linux'
-  identity: {
-    type: 'SystemAssigned'
-  }
-  properties: {
-    httpsOnly: true
-    serverFarmId: plan.id
-    siteConfig: {
-      linuxFxVersion: 'Python|3.11'
-      appSettings: [
-        {
-          name: 'FUNCTIONS_EXTENSION_VERSION'
-          value: '~4'
-        }
-        {
-          name: 'FUNCTIONS_WORKER_RUNTIME'
-          value: 'python'
-        }
-        {
-          name: 'AzureWebJobsStorage'
-          value: 'DefaultEndpointsProtocol=https;AccountName=${storage.name};EndpointSuffix=${environment().suffixes.storage};AccountKey=${storage.listKeys().keys[0].value}'
-        }
-        {
-          name: 'APPLICATIONINSIGHTS_CONNECTION_STRING'
-          value: appInsights.properties.ConnectionString
-        }
-        {
-          name: 'SEARCH_ENDPOINT'
-          value: 'https://${searchService.name}.search.windows.net'
-        }
-        {
-          name: 'DOCUMENT_INDEX'
-          value: documentIndexName
-        }
-        {
-          name: 'IMAGE_INDEX'
-          value: imageIndexName
-        }
-        {
-          name: 'AZURE_OPENAI_ENDPOINT'
-          value: openAI.properties.endpoint
-        }
-        {
-          name: 'AZURE_OPENAI_DEPLOYMENT'
-          value: openAIDeploymentName
-        }
-        {
-          name: 'AZURE_OPENAI_API_VERSION'
-          value: '2024-10-21'
-        }
-      ]
-    }
-  }
-}
-
-resource openAIUserAssignment 'Microsoft.Authorization/roleAssignments@2022-04-01' = {
-  name: guid(openAI.id, functionApp.id, 'Cognitive Services OpenAI User')
-  scope: openAI
-  properties: {
-    roleDefinitionId: subscriptionResourceId('Microsoft.Authorization/roleDefinitions', '5e0bd9bd-7b93-4f28-af87-19fc36ad61bd')
-    principalId: functionApp.identity.principalId
-    principalType: 'ServicePrincipal'
+module functionHosting 'function-app-flex.bicep' = {
+  name: 'function-hosting'
+  params: {
+    location: location
+    functionAppName: functionName
+    storageAccountName: storage.name
+    appInsightsName: appInsightsName
+    searchEndpoint: 'https://${searchService.name}.search.windows.net'
+    documentIndexName: documentIndexName
+    imageIndexName: imageIndexName
+    openAIAccountName: openAI.name
+    openAIEndpoint: openAI.properties.endpoint
+    openAIDeploymentName: openAIDeployment.name
   }
 }
 
@@ -258,8 +184,8 @@ output visionAccountName string = vision.name
 output openAIAccountName string = openAI.name
 output openAIDeploymentName string = openAIDeployment.name
 output storageAccountName string = storage.name
-output functionAppName string = functionApp.name
-output functionApiUrl string = 'https://${functionApp.properties.defaultHostName}/api/askrenewablecompliance'
+output functionAppName string = functionHosting.outputs.functionAppName
+output functionApiUrl string = functionHosting.outputs.functionApiUrl
 output documentIndexName string = documentIndexName
 output imageIndexName string = imageIndexName
 
