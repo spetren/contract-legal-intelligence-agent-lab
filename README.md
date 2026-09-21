@@ -1,7 +1,7 @@
 # Contract & Legal Intelligence Agent (Renewable Energy Example)
 
 **RECCIA** stands for **Renewable Energy Contract and Compliance Intelligence Agent** - the internal
-technical short name used throughout this repo's resources and scripts. This repo is a **90-minute,
+technical short name used throughout this repo's resources and scripts. This repo is a **75-minute,
 six-document lab build** of the Contract & Legal Intelligence Agent pattern from the
 [AI Agent Runbooks](https://github.com/microsoft/ai-agent-runbooks) library, worked through a
 renewable-energy permitting and compliance example.
@@ -14,8 +14,8 @@ Studio custom connector action.
 ## What this repo is for
 
 This is deliberately a **template, not a finished product** - a working proof of concept sized to build and
-run end-to-end in a single 90-minute sitting with the help of an AI coding assistant like Microsoft Scout
-or GitHub Copilot. Fork it, then extend it with:
+run end-to-end in a single 75-minute sitting, one guided prompt at a time, with an AI coding assistant like
+Microsoft Scout or GitHub Copilot doing the typing. Fork it, then extend it with:
 
 - **Private endpoints and network isolation**, if the target environment requires them.
 - **A different data processing approach**, if the customer's documents need different extraction,
@@ -77,7 +77,7 @@ framing the lab with a customer.
 | `prompts/` | Reusable Copilot Studio and Foundry reasoning prompts. |
 | `docs/` | Architecture, processing pipeline, Copilot setup, and troubleshooting notes. |
 | `docs/graph-app-registration.md` | Scripted and portal walkthroughs for the Microsoft Graph app registration prerequisite. |
-| `docs/Contract-and-Legal-Intelligence-Agent-Lab-Guide.docx` | Complete instructor-style implementation lab guide, sized for a 90-minute lab. |
+| `docs/Contract-and-Legal-Intelligence-Agent-Lab-Guide.docx` | Complete instructor-style implementation lab guide: 7 prompt-driven stages, each with a paste-ready prompt and a Success Gate, sized for a 75-minute build. |
 | `docs/recreate-with-an-ai-assistant.md` | Step-by-step prompts for having an AI assistant reproduce this whole pattern for a different scenario or corpus. |
 | `assets/` | One-slide What/Why/How/Next-Steps deck and preview image for framing the lab. |
 | `tests/test_graph_auth.py` | Unit tests for the Graph device-code token flow and Document Intelligence credential fallback. |
@@ -163,316 +163,40 @@ The Bicep template deploys these resources because each one owns a specific part
 | VNet, subnets, private endpoints, and private DNS zones | Give the Function App private, managed-identity-authenticated network paths to blob, queue, and table storage instead of a public shared key. |
 | Managed identity role assignment for the Function App to call Azure OpenAI | Lets the Function call Azure OpenAI with Entra identity instead of embedding Azure OpenAI keys in code or app settings. |
 
-## Quickstart
+## Build the Lab (7 Stages, 75 Minutes)
 
-```powershell
-python -m venv .venv
-.\.venv\Scripts\python.exe -m pip install -r requirements.txt
+This lab is built through a series of prompts to your AI coding assistant (Microsoft Scout or GitHub
+Copilot CLI), not by typing PowerShell yourself. Each of the 7 stages below has a paste-ready prompt and a
+**Success Gate** - a concrete, checkable fact you confirm before moving to the next stage. The full text
+of every prompt, gate, and troubleshooting note lives in
+[docs/Contract-and-Legal-Intelligence-Agent-Lab-Guide.docx](docs/Contract-and-Legal-Intelligence-Agent-Lab-Guide.docx);
+this section is the condensed, at-a-glance version.
 
-.\scripts\deploy-azure-resources.ps1 `
-  -SubscriptionId "<subscription-id>" `
-  -ResourceGroupName "rg-reccia-graph-ingestion" `
-  -NamePrefix "reccia"
-```
+| Stage | Name | Time | You'll have |
+| --- | --- | ---: | --- |
+| 0 | Get Ready to Build | 5 min | Tenant, subscription, and local environment confirmed |
+| 1 | Build the Azure Foundation | 15 min | Resource group with Search, Document Intelligence, Vision, Azure OpenAI, Function App, and a Graph client |
+| 2 | Load the Document Corpus | 10 min | 6 documents uploaded into a SharePoint library |
+| 3 | Build the Knowledge Indexes | 15 min | `reccia-documents` and `reccia-images` both populated |
+| 4 | Build the Reasoning API | 10 min | A Function returning grounded, cited answers |
+| 5 | Wire the Connector and Build the Agent | 15 min | A Published Copilot Studio agent with the connector action attached |
+| 6 | Put It to the Test | 5 min | All 6 evaluation prompts behaving as expected |
 
-The deployment script automatically selects the first eligible Flex Consumption region (see
-[Before you deploy](#before-you-deploy)); pass `-Location <region>` to require a specific one instead. It
-then uses `infra\main.bicep` to create the required Azure resources.
+Give your assistant this to start Stage 0:
 
-```powershell
-.\scripts\bootstrap-sharepoint-corpus.ps1 `
-  -SubscriptionId "<subscription-id>" `
-  -DriveId "<sharepoint-drive-id>" `
-  -DocumentIndexPath "data\document-index.csv" `
-  -SourceFolder "Source Documents"
+> "I'm ready to build the Contract & Legal Intelligence Agent from
+> github.com/spetren/contract-legal-intelligence-agent-lab. Before we start, confirm I'm signed into the
+> right Azure subscription and tenant with the Azure CLI, that this repo is cloned with its Python virtual
+> environment and dependencies installed, and that the Power Platform CLI is available."
 
-.\scripts\run-text-ingestion.ps1 `
-  -SubscriptionId "<subscription-id>" `
-  -TenantId "<demo-tenant-id>" `
-  -GraphClientId "<graph-client-id>" `
-  -ResourceGroupName "rg-reccia-graph-ingestion" `
-  -SearchServiceName "<search-service>" `
-  -DocumentIntelligenceAccountName "<doc-intel-account>" `
-  -DriveId "<sharepoint-drive-id>"
+When Stage 0's gate passes, tell your assistant *"Build the Azure foundation"* and it moves to Stage 1 -
+and so on through Stage 6. Each stage's prompt in the Lab Guide names the exact repo script(s) your
+assistant runs underneath (`scripts/deploy-azure-resources.ps1`, `scripts/run-text-ingestion.ps1`,
+`scripts/register-copilot-action.ps1`, and so on) so nothing here is a black box.
 
-.\scripts\run-image-extraction.ps1 `
-  -SubscriptionId "<subscription-id>" `
-  -TenantId "<demo-tenant-id>" `
-  -GraphClientId "<graph-client-id>" `
-  -ResourceGroupName "rg-reccia-graph-ingestion" `
-  -SearchServiceName "<search-service>" `
-  -VisionAccountName "<vision-account>" `
-  -DriveId "<sharepoint-drive-id>" `
-  -RenderPages `
-  -SkipExistingIndexed
-
-.\scripts\deploy-function-api.ps1 `
-  -SubscriptionId "<subscription-id>" `
-  -ResourceGroupName "rg-reccia-graph-ingestion" `
-  -FunctionAppName "<function-app>" `
-  -StorageAccountName "<storage-account>" `
-  -SearchServiceName "<search-service>" `
-  -OpenAIAccountName "<openai-account>" `
-  -OpenAIDeploymentName "gpt-4.1-mini"
-
-.\scripts\test-reccia-api.ps1 `
-  -SubscriptionId "<subscription-id>" `
-  -ResourceGroupName "rg-reccia-graph-ingestion" `
-  -FunctionAppName "<function-app>"
-```
-
-Use the `-TenantId`/`-GraphClientId` values recorded from
-[registering the Graph client](#before-you-deploy). `run-text-ingestion.ps1` requests delegated
-`Files.Read.All`; `run-image-extraction.ps1` requests `Files.ReadWrite.All` because it writes extracted
-images back to SharePoint. Each script's first run opens a device-code sign-in prompt.
-
-**Run in parallel once the corpus is bootstrapped:** `run-text-ingestion.ps1`, `run-image-extraction.ps1`,
-and `deploy-function-api.ps1` have no dependency on each other - open a separate PowerShell terminal for
-each and start all three together to save wall-clock time. Only `test-reccia-api.ps1` must wait for
-`deploy-function-api.ps1` to finish.
-
-Then create a Power Platform authentication profile with device-code sign-in and select the target
-environment:
-
-```powershell
-pac auth create --name reccia-lab --deviceCode --tenant "<demo-tenant-id>"
-pac org select --environment "<environment-url>"
-```
-
-Then register the Copilot Studio custom connector:
-
-```powershell
-.\scripts\register-copilot-action.ps1 `
-  -SubscriptionId "<subscription-id>" `
-  -ResourceGroupName "rg-reccia-graph-ingestion" `
-  -FunctionAppName "<function-app>" `
-  -EnvironmentUrl "https://<org>.crm.dynamics.com/" `
-  -EnvironmentId "<environment-id>" `
-  -BotSchemaName "reccia_RenewableComplianceReviewer"
-```
-
-The script replaces the `host` value in `reccia-agent-api\connector\apiDefinition.swagger.json` with your
-deployed Function's hostname automatically, and prints the `connectorInternalId`, `connectionName`, and
-`connectionReferenceLogicalName` you will need when creating the agent - see
-[step 9 of manual deployment](#manual-deployment).
-
-## Recommended 90-minute agenda
-
-| Time | Segment | Outcome |
-| ---: | --- | --- |
-| 0-10 min | Legal/compliance scenario framing | Attendees understand the agent is an evidence-retrieval aid, not legal advice. |
-| 10-20 min | Architecture and resource purpose | Attendees can explain SharePoint, Search, Vision, Document Intelligence, OpenAI, Function, and Copilot Studio roles. |
-| 20-35 min | Azure resource deployment review | Bicep deployment is started or reviewed if pre-staged. |
-| 35-50 min | Six-document SharePoint bootstrap | The corpus is uploaded into its own SharePoint folder. |
-| 50-65 min | Text ingestion and targeted visual extraction | `reccia-documents` and `reccia-images` are populated from the six-document corpus. |
-| 65-80 min | Function, connector, and Copilot Studio action | The API and action path are tested. |
-| 80-90 min | Compliance guardrails and lab prompts | Attendees validate citations, legal-advice refusal, and checklist comparison. |
-
-For a reliable 90-minute delivery, pre-stage Azure infrastructure before the session and use the live time
-for corpus bootstrap, ingestion, API testing, and Copilot Studio validation. Once the SharePoint corpus is
-bootstrapped, run text ingestion, image extraction, and the Function API deployment in separate PowerShell
-terminals in parallel - none of the three depends on the others finishing first.
-
-## Manual deployment
-
-Use this path when you want to deploy the lab step by step instead of running the whole setup as a single
-workshop flow.
-
-1. **Clone and prepare the repo.**
-
-   ```powershell
-   git clone https://github.com/spetren/contract-legal-intelligence-agent-lab.git
-   cd contract-legal-intelligence-agent-lab
-   python -m venv .venv
-   .\.venv\Scripts\python.exe -m pip install -r requirements.txt
-   Copy-Item .env.example .env
-   ```
-
-2. **Find an eligible region, create the Azure resource group, and deploy the Bicep template.**
-
-   ```powershell
-   $subscriptionId = "<subscription-id>"
-   $tenantId = "<demo-tenant-id>"
-   $resourceGroupName = "rg-reccia-lab"
-   $namePrefix = "reccia"
-
-   $eligibleRegion = .\scripts\find-deployment-regions.ps1 -SubscriptionId $subscriptionId
-   $location = $eligibleRegion.Region
-
-   az account set --subscription $subscriptionId
-   az group create --name $resourceGroupName --location $location
-   az deployment group create `
-     --resource-group $resourceGroupName `
-     --template-file infra\main.bicep `
-     --parameters `
-       namePrefix=$namePrefix `
-       location=$location `
-       openAIDeploymentName="gpt-4.1-mini" `
-       openAIModelName="gpt-4.1-mini" `
-       openAIModelVersion="2025-04-14"
-   ```
-
-   Record the generated Search, Document Intelligence, Vision, Azure OpenAI, Storage, and Function App
-   names in `.env` and Appendix A of the lab guide.
-
-3. **Register the Microsoft Graph public client.**
-
-   ```powershell
-   $graphRegistration = .\scripts\register-graph-client.ps1 `
-     -TenantId $tenantId `
-     -SubscriptionId $subscriptionId | ConvertFrom-Json
-   $graphClientId = $graphRegistration.graphClientId
-   ```
-
-   This registration uses delegated device-code authentication and does not require a client secret. For a
-   portal walkthrough, see [Microsoft Graph app registration](docs/graph-app-registration.md).
-
-4. **Prepare SharePoint for the corpus.**
-
-   Create or choose a SharePoint document library, create a `Source Documents` folder, and resolve the
-   library's Microsoft Graph drive ID. Then either upload your own documents manually or bootstrap the
-   public six-document corpus from `data\document-index.csv`:
-
-   ```powershell
-   .\scripts\bootstrap-sharepoint-corpus.ps1 `
-     -SubscriptionId $subscriptionId `
-     -DriveId "<sharepoint-drive-id>" `
-     -DocumentIndexPath "data\document-index.csv" `
-     -SourceFolder "Source Documents"
-   ```
-
-5. **Run text ingestion.**
-
-   ```powershell
-   .\scripts\run-text-ingestion.ps1 `
-     -SubscriptionId $subscriptionId `
-     -TenantId $tenantId `
-     -GraphClientId $graphClientId `
-     -ResourceGroupName $resourceGroupName `
-     -SearchServiceName "<search-service>" `
-     -DocumentIntelligenceAccountName "<doc-intel-account>" `
-     -DriveId "<sharepoint-drive-id>"
-   ```
-
-   Continue only after `reccia-documents` has a non-zero document count and Search explorer returns
-   cited text results.
-
-6. **Run visual evidence extraction.**
-
-   ```powershell
-   .\scripts\run-image-extraction.ps1 `
-     -SubscriptionId $subscriptionId `
-     -TenantId $tenantId `
-     -GraphClientId $graphClientId `
-     -ResourceGroupName $resourceGroupName `
-     -SearchServiceName "<search-service>" `
-     -VisionAccountName "<vision-account>" `
-     -DriveId "<sharepoint-drive-id>" `
-     -RenderPages `
-     -SkipExistingIndexed
-   ```
-
-   Use `-SkipExistingIndexed` on every retry so interrupted long runs resume without reprocessing
-   completed images. **This step, step 5, and step 7 have no dependency on each other** - once the
-   corpus is bootstrapped, run them in separate PowerShell terminals in parallel to save time.
-
-7. **Deploy and test the reasoning API.**
-
-   ```powershell
-   .\scripts\deploy-function-api.ps1 `
-     -SubscriptionId $subscriptionId `
-     -ResourceGroupName $resourceGroupName `
-     -FunctionAppName "<function-app>" `
-     -StorageAccountName "<storage-account>" `
-     -SearchServiceName "<search-service>" `
-     -OpenAIAccountName "<openai-account>" `
-     -OpenAIDeploymentName "gpt-4.1-mini"
-
-   .\scripts\test-reccia-api.ps1 `
-     -SubscriptionId $subscriptionId `
-     -ResourceGroupName $resourceGroupName `
-     -FunctionAppName "<function-app>"
-   ```
-
-   The test should return `reasoningMode: foundry`, a populated answer, and document or image citations.
-
-8. **Register the Copilot Studio connector and action.**
-
-   Create a Power Platform authentication profile with device-code sign-in and select the target
-   environment first:
-
-   ```powershell
-   pac auth create --name reccia-lab --deviceCode --tenant $tenantId
-   pac org select --environment "<environment-url>"
-   ```
-
-   ```powershell
-   .\scripts\register-copilot-action.ps1 `
-     -SubscriptionId $subscriptionId `
-     -ResourceGroupName $resourceGroupName `
-     -FunctionAppName "<function-app>" `
-     -EnvironmentUrl "https://<org>.crm.dynamics.com/" `
-     -EnvironmentId "<environment-id>" `
-     -BotSchemaName "reccia_RenewableComplianceReviewer"
-   ```
-
-   The script replaces the `host` value in `reccia-agent-api\connector\apiDefinition.swagger.json` with
-   your deployed Function's hostname automatically. Confirm the Power Platform connection is `Connected`
-   and the Dataverse connection reference has `connectionid` populated, and record the printed
-   `connectorInternalId`, `connectionName`, and `connectionReferenceLogicalName` for the next step.
-
-9. **Create, configure, and publish the Copilot Studio agent.**
-
-   Create the agent workspace with an explicit project directory so you know where the generated files
-   land:
-
-   ```powershell
-   pac copilot init `
-     --name "Renewable Compliance Reviewer" `
-     --publisher-prefix reccia `
-     --project-dir .\reccia-agent-workspace
-   ```
-
-   Cloning an existing agent instead of creating a new one? Use
-   `pac copilot clone --bot <bot-id-or-schema-name> --output-dir .\reccia-agent-workspace` instead of
-   `init`.
-
-   Copy the connector and connection-reference templates into the **root of that generated workspace**
-   (not this repo's `copilot\` folder):
-
-   ```powershell
-   Copy-Item copilot\actions\SearchKnowledge.mcs.yml .\reccia-agent-workspace\actions\ -Force
-   Copy-Item copilot\connectionreferences.mcs.yml .\reccia-agent-workspace\ -Force
-   ```
-
-   Replace the placeholders in both copied files with the values `register-copilot-action.ps1` printed in
-   step 8:
-
-   | Placeholder | Replace with |
-   | --- | --- |
-   | `{{BOT_SCHEMA_NAME}}` | The agent's schema name (the `-BotSchemaName` value, e.g. `reccia_RenewableComplianceReviewer`) |
-   | `{{CONNECTOR_INTERNAL_ID}}` | The script's `connectorInternalId` output |
-   | `{{CONNECTION_NAME}}` | The script's `connectionName` output (defaults to `reccia-renewable-knowledge`) |
-
-   Paste the instructions from `prompts\copilot-agent-instructions.md` into the agent's instructions, and
-   set `gptCapabilities.webBrowsing: false` - see Module 0.7 of the Lab Guide for why this matters.
-
-   **Pull before you push**, even on a brand-new workspace - this reconciles any server-side defaults
-   `pac copilot init` did not generate locally, so the push does not silently overwrite them:
-
-   ```powershell
-   pac copilot pull --project-dir .\reccia-agent-workspace
-   pac copilot push --project-dir .\reccia-agent-workspace
-   pac copilot publish --environment "<environment-url>" --bot "reccia_RenewableComplianceReviewer"
-   ```
-
-10. **Validate the deployment.**
-
-    In the Copilot Studio test pane, run the prompts in the **Lab prompts** section below and confirm the
-    agent's answers match the expected behavior for each. Text answers should cite source documents and
-    pages; visual answers should return normal `[View diagram](url)` links, not inline image Markdown; and
-    the legal-advice prompt should be declined with a recommendation to verify with counsel. If any of
-    these do not hold, the agent is not ready to demo - see `docs/troubleshooting.md` before proceeding.
+Prefer to drive the scripts directly yourself instead of through prompts? Every script referenced above
+still works standalone with the same parameters described in the Lab Guide - open any file under
+`scripts/` for its full parameter list.
 
 ## Lab prompts
 
