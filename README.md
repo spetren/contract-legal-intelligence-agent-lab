@@ -102,19 +102,29 @@ framing the lab with a customer.
 
 ## Before you deploy
 
-Find the first Azure region that supports both Azure Functions Flex Consumption and the configured Azure
-OpenAI model version:
+Find the first Azure region that supports Azure Functions Flex Consumption, Azure AI Vision Image
+Analysis 4.0 captions, and the configured Azure OpenAI model version:
 
 ```powershell
 .\scripts\find-deployment-regions.ps1 `
   -SubscriptionId "<subscription-id>"
 ```
 
-The script tries common US regions first and stops at the first match. To control the search order, add
-`-Regions northcentralus,eastus`. Use the returned region for `-Location` in the deployment commands
+The script tries common US regions first, skips regions without caption support, and stops at the first
+match. To control the search order, add `-Regions eastus,westus`. Use the returned region for `-Location` in the deployment commands
 below. This lab deploys the Function App on Flex Consumption (`FC1`), not the legacy Dynamic Consumption
 (`Y1`) plan, so Y1 quota is not part of this check - and the model check confirms catalog availability,
 not deployment capacity or quota.
+
+Caption support is checked against Microsoft's [documented Image Analysis region list](https://learn.microsoft.com/azure/ai-services/computer-vision/overview-image-analysis#region-availability),
+verified on September 28, 2026 and maintained in the region-finder script. This is a documented capability
+check, not a live image-analysis test. North Central US can host Vision but does not support the caption
+feature used by this lab. Explicitly requesting only a non-caption region now fails before resources
+are created. The deployment script uses this same check.
+
+After provisioning, verify a real `caption,read,tags` request against the selected Vision account before
+bulk image ingestion. This also checks authentication and feature access. Run the offline region-check
+regressions with `.\tests\test_find_deployment_regions.ps1`.
 
 Register the Log Analytics provider required by Application Insights:
 

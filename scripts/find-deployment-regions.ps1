@@ -7,6 +7,19 @@ param(
 
 $ErrorActionPreference = "Stop"
 
+# Image Analysis 4.0 caption regions, verified 2026-09-28:
+# https://learn.microsoft.com/azure/ai-services/computer-vision/overview-image-analysis#region-availability
+$visionCaptionRegions = @(
+  "eastus",
+  "westus",
+  "francecentral",
+  "northeurope",
+  "westeurope",
+  "southeastasia",
+  "eastasia",
+  "koreacentral"
+)
+
 function Invoke-AzJson {
   param(
     [Parameter(Mandatory = $true)][string[]]$Arguments,
@@ -15,7 +28,10 @@ function Invoke-AzJson {
 
   $output = & az @Arguments 2>$null
   if ($LASTEXITCODE -ne 0) {
-    if ($AllowFailure) { return $null }
+    if ($AllowFailure) {
+      Write-Warning "Could not check availability: az $($Arguments -join ' '). Skipping this candidate."
+      return $null
+    }
     throw "Azure CLI command failed: az $($Arguments -join ' ')"
   }
 
@@ -78,10 +94,18 @@ if ($candidateRegions.Count -eq 0) {
   throw "None of the requested regions support Azure Functions Flex Consumption."
 }
 
+foreach ($region in @($candidateRegions | Where-Object { $_ -notin $visionCaptionRegions })) {
+  Write-Host "Skipping '$region': Azure AI Vision Image Analysis 4.0 captions are not supported in the documented region list."
+}
+$candidateRegions = @($candidateRegions | Where-Object { $_ -in $visionCaptionRegions })
+if ($candidateRegions.Count -eq 0) {
+  throw "No candidate regions support both Azure Functions Flex Consumption and Azure AI Vision Image Analysis 4.0 captions. Try a caption-capable region such as eastus or westus."
+}
+
 $result = $null
 foreach ($region in $candidateRegions) {
   Write-Progress `
-    -Activity "Checking Flex Consumption and model availability" `
+    -Activity "Checking Flex Consumption, Vision captions, and model availability" `
     -Status $region
 
   $models = @(Invoke-AzJson -Arguments @(
@@ -102,6 +126,7 @@ foreach ($region in $candidateRegions) {
       Region = $region
       DisplayName = $displayName
       FlexConsumption = $true
+      VisionCaptions = $true
       Model = $ModelName
       ModelVersion = $ModelVersion
     }
@@ -109,10 +134,10 @@ foreach ($region in $candidateRegions) {
   }
 }
 
-Write-Progress -Activity "Checking Flex Consumption and model availability" -Completed
+Write-Progress -Activity "Checking Flex Consumption, Vision captions, and model availability" -Completed
 
 if (-not $result) {
-  throw "No regions support both Flex Consumption and model '$ModelName' version '$ModelVersion'. Model catalog availability does not guarantee deployment capacity or quota."
+  throw "No regions support Flex Consumption, Azure AI Vision Image Analysis 4.0 captions, and model '$ModelName' version '$ModelVersion'. Model catalog availability does not guarantee deployment capacity or quota."
 }
 
 $result

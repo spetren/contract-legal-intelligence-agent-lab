@@ -32,7 +32,7 @@ if ($Location) {
 
 $eligibleRegion = & $regionFinder @regionParameters
 $Location = $eligibleRegion.Region
-Write-Host "Using Azure region '$Location' for Flex Consumption and $OpenAIModelName $OpenAIModelVersion."
+Write-Host "Using Azure region '$Location' for Flex Consumption, Azure AI Vision captions, and $OpenAIModelName $OpenAIModelVersion."
 
 az group create --name $ResourceGroupName --location $Location | Out-Null
 if ($LASTEXITCODE -ne 0) {

@@ -32,6 +32,24 @@ No client secret is created or required. The text ingestion script requests `Fil
 
 The delegated permissions do not normally require tenant-wide admin consent. If the tenant's user-consent policy blocks sign-in, a tenant administrator can rerun the script with `-GrantAdminConsent` or grant consent in the portal.
 
+### First-run permission manifest
+
+Azure CLI expects `--required-resource-accesses` to contain a JSON array, even when
+Microsoft Graph is the only API. The script uses `ConvertTo-Json -InputObject` to
+preserve that array; piping a single-item array into `ConvertTo-Json` unwraps it
+into an object and can leave a newly created app without the requested permissions.
+If an earlier run created such an app, rerun the corrected script with the same
+`-AppDisplayName` to add the missing permissions.
+
+Run the offline regression test from the repository root:
+
+```powershell
+.\tests\test_register_graph_client.ps1
+```
+
+The test mocks Azure CLI, exercises the new-registration path, and checks the JSON
+array and both delegated scopes without creating any tenant resources.
+
 ## Manual: Microsoft Entra admin center
 
 Use this path when participants need to practice the underlying identity configuration or when tenant policy prevents CLI-based registration.

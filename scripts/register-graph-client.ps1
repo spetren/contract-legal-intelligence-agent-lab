@@ -58,14 +58,14 @@ if ($matchingApps.Count -gt 1) {
 if ($matchingApps.Count -eq 0) {
   $manifestPath = Join-Path $env:TEMP "reccia-graph-permissions-$([guid]::NewGuid().ToString('N')).json"
   try {
-    @(
+    ConvertTo-Json -Depth 5 -InputObject @(
       @{
         resourceAppId = $graphResourceAppId
         resourceAccess = @(
           $permissions | ForEach-Object { @{ id = $_.Id; type = "Scope" } }
         )
       }
-    ) | ConvertTo-Json -Depth 5 | Set-Content -Path $manifestPath -Encoding utf8
+    ) | Set-Content -Path $manifestPath -Encoding utf8
 
     $app = az ad app create `
       --display-name $AppDisplayName `
